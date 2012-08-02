@@ -1,0 +1,78 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<project basedir="." default="build" name="wall-e-tests">
+	<property environment="env" />
+	<property name="junit.output.dir" value="junit" />
+	<property name="wall-e.location" value="../wall-e" />
+	<property name="debuglevel" value="source,lines,vars" />
+	<property name="target" value="1.7" />
+	<property name="source" value="1.7" />
+	<path id="JUnit 4.libraryclasspath">
+		<pathelement location="lib/junit-dep-4.10.jar" />
+		<pathelement location="lib/hamcrest-all-1.1.jar" />
+	</path>
+	<path id="LeJOS NXT Runtime.libraryclasspath">
+		<pathelement location="C:/leJOS NXJ/lib/nxt/classes.jar" />
+	</path>
+	<path id="wall-e.classpath">
+		<pathelement location="${wall-e.location}/bin" />
+		<path refid="LeJOS NXT Runtime.libraryclasspath" />
+	</path>
+	<path id="wall-e-tests.classpath">
+		<pathelement location="bin" />
+		<path refid="JUnit 4.libraryclasspath" />
+		<path refid="wall-e.classpath" />
+		<pathelement location="C:/leJOS NXJ/lib/nxt/classes.jar" />
+		<pathelement location="lib/mockito-all-1.9.0.jar" />
+	</path>
+	<target name="init">
+		<mkdir dir="bin" />
+		<copy includeemptydirs="false" todir="bin">
+			<fileset dir="src">
+				<exclude name="**/*.java" />
+			</fileset>
+		</copy>
+	</target>
+	<target name="clean">
+		<delete dir="bin" />
+	</target>
+	<target depends="clean" name="cleanall">
+		<ant antfile="build.xml" dir="${wall-e.location}" inheritAll="false" target="clean" />
+	</target>
+	<target depends="build-subprojects,build-project" name="build" />
+	<target name="build-subprojects">
+		<ant antfile="build.xml" dir="${wall-e.location}" inheritAll="false" target="build-project">
+			<propertyset>
+				<propertyref name="build.compiler" />
+			</propertyset>
+		</ant>
+	</target>
+	<target depends="init" name="build-project">
+		<echo message="${ant.project.name}: ${ant.file}" />
+		<javac debug="true" debuglevel="${debuglevel}" destdir="bin" source="${source}" target="${target}">
+			<src path="src" />
+			<classpath refid="wall-e-tests.classpath" />
+		</javac>
+	</target>
+
+	<target name="wall-e-tests">
+		<mkdir dir="${junit.output.dir}" />
+		<junit printsummary="withOutAndErr">
+			<formatter type="xml" />
+			<batchtest fork="yes" todir="${junit.output.dir}">
+				<fileset dir="bin">
+					<include name="**/*Test*" />
+				</fileset>
+			</batchtest>
+			<classpath refid="wall-e-tests.classpath" />
+		</junit>
+	</target>
+
+	<target name="junitreport">
+		<junitreport todir="${junit.output.dir}">
+			<fileset dir="${junit.output.dir}">
+				<include name="TEST-*.xml" />
+			</fileset>
+			<report format="frames" todir="${junit.output.dir}" />
+		</junitreport>
+	</target>
+</project>
